@@ -11,3 +11,10 @@ proc import out = depression
 			 getnames = yes; 
 run; 
 
+* descriptive statistics; 
+
+proc means data = depression median; 
+	var BEDEPON;
+	class PARDEP; 
+	where DSMDEPHR = 1;
+run; 
