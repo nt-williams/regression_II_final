@@ -1,7 +1,6 @@
 ---
 title: "Applied Regression II Final - Part One"
 author: "Nick Williams"
-date: "October 16, 2018"
 output: pdf_document
 ---
 
@@ -32,7 +31,7 @@ data depression;
 run;
 ```
 
-1. I defined the start time as the time of birth for all children. The end time was defined as either the age of onset of depression in children that were classified as ever having depression or as the age at child interview for children that classified as never having depression. To hold this survival time, I created a variable called `follow_time`:
+1. I defined the start time as the time of birth for all children. The end time was defined as either the age of onset of depression in children that were classified as ever having depression or as the age of a child at the interview for children that classified as never having depression. To hold this survival time, I created a variable called `follow_time`:
 
 ```{}
 data depression;
@@ -65,5 +64,12 @@ proc lifetest data = depression method = km conftype = loglog stderr plots = sur
 	time follow_time * child_dep(0); 
 run; 
 ```
+
+  (i) $H_0: S_1(t) = S_2(t) \text{ for all } t \leq \tau$  
+      $H_A: S_1(t) \neq S_2(t) \text{ for some } t \leq \tau$
+  (ii) $Q = 7.6876 \sim \chi^2_1$  
+       $p = P(\chi^2_1 \geq 7.6876) = 0.0056$
+  (iii) $0.0056 < 0.05 \rightarrow$ reject the null hypothesis
+  (iv) At the 5% signficance level, there is sufficient evidence to claim that age of onset of depression in children differs between children with parental history of depression and children without parental history of depression. 
 
 
