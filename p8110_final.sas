@@ -24,21 +24,29 @@ data depression;
 		   MSPARENT = mar_stat_parent; 
 run; 
 
-* descriptive statistics; 
-
-proc means data = depression median clm maxdec = 2; 
-	var BEDEPON;
-	class PARDEP; 
-	where DSMDEPHR = 1;
-run; 
-
 * defining survival time; 
 
 data depression;
 	set depression; 
 
-	if DSMDEPHR = 1 then 
-		follow_time = BEDEPON; 
-	else if DSMDEPHR = 0 
-		then follow_time = PTAGE; 
+	if child_dep = 1 then 
+		follow_time = age_child_dep; 
+	else if child_dep = 0 
+		then follow_time = child_age; 
 run; 
+
+* descriptive statistics; 
+
+proc means data = depression median clm maxdec = 2; 
+	var age_child_dep;
+	class parent_dep; 
+	where child_dep = 1;
+run; 
+
+* KM-surv curve, parent depression status; 
+
+proc lifetest data = depression method = km conftype = loglog stderr plots = survival(cl);
+	strata parent_dep;  
+	time follow_time * child_dep(0); 
+run; 
+
