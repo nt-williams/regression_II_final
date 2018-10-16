@@ -11,10 +11,34 @@ proc import out = depression
 			 getnames = yes; 
 run; 
 
+data depression; 
+	set depression; 
+	rename PARDEP = parent_dep
+		   DSMDEPHR = child_dep
+		   PTSEX = child_sex
+		   PTAGE = child_age
+		   BEDEPON = age_child_dep
+		   DSMSUBHR = sub_abuse_child
+		   BESUBON = age_sub_child
+		   SESCLASS = ses_parent
+		   MSPARENT = mar_stat_parent; 
+run; 
+
 * descriptive statistics; 
 
-proc means data = depression median; 
+proc means data = depression median clm maxdec = 2; 
 	var BEDEPON;
 	class PARDEP; 
 	where DSMDEPHR = 1;
+run; 
+
+* defining survival time; 
+
+data depression;
+	set depression; 
+
+	if DSMDEPHR = 1 then 
+		follow_time = BEDEPON; 
+	else if DSMDEPHR = 0 
+		then follow_time = PTAGE; 
 run; 
