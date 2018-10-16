@@ -1,0 +1,11 @@
+---
+title: "Applied Regression II Final - Part One"
+author: "Nick Williams"
+date: "October 16, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
