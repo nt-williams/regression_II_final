@@ -6,6 +6,8 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(kableExtra)
 ```
 
 *Data import and preparation*
@@ -55,6 +57,91 @@ run;
 ```
 
 3. 
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+depress <- read_csv("./data/data.csv") %>% 
+  janitor::clean_names()
+
+sex_tbl <- depress %>% 
+  mutate(pardep = as.factor(pardep), 
+         pardep = fct_recode(pardep, "Ever depressed" = "1", "Never depressed" = "0"),
+         ptsex = as.factor(ptsex), 
+         ptsex = fct_recode(ptsex, Male = "1", Female = "2")) %>% 
+  group_by(pardep, ptsex) %>% 
+  summarize(n = n()) %>% 
+  mutate(freq = round(((n / sum(n)) * 100), 2)) %>%
+  unite("n_freq", c(n, freq), sep = " ") %>% 
+  spread(key = pardep, value = n_freq) %>% 
+  rename("Covariate" = ptsex) 
+
+depress_tbl <- depress %>% 
+  mutate(pardep = as.factor(pardep), 
+         pardep = fct_recode(pardep, "Ever depressed" = "1", "Never depressed" = "0"),
+         dsmdephr = as.factor(dsmdephr), 
+         dsmdephr = fct_recode(dsmdephr, "Ever depressed" = "1", "Never depressed" = "0")) %>% 
+  group_by(pardep, dsmdephr) %>% 
+  summarize(n = n()) %>% 
+  mutate(freq = round(((n / sum(n)) * 100), 2)) %>% 
+  unite("n_freq", c(n, freq), sep = " ") %>% 
+  spread(key = pardep, value = n_freq) %>% 
+  rename("Covariate" = dsmdephr)
+
+sub_abuse_tbl <- depress %>% 
+  mutate(pardep = as.factor(pardep), 
+         pardep = fct_recode(pardep, "Ever depressed" = "1", "Never depressed" = "0"),
+         dsmsubhr = as.factor(dsmsubhr), 
+         dsmsubhr = fct_recode(dsmsubhr, "Substance abuse" = "1", "No substance abuse" = "0")) %>% 
+  group_by(pardep, dsmsubhr) %>% 
+  summarize(n = n()) %>% 
+  mutate(freq = round(((n / sum(n)) * 100), 2)) %>% 
+  unite("n_freq", c(n, freq), sep = " ") %>% 
+  spread(key = pardep, value = n_freq) %>% 
+  rename("Covariate" = dsmsubhr)
+
+ses_tbl <- depress %>% 
+  mutate(pardep = as.factor(pardep), 
+         pardep = fct_recode(pardep, "Ever depressed" = "1", "Never depressed" = "0"), 
+         sesclass = as.factor(sesclass)) %>%
+  filter(!is.na(sesclass)) %>% 
+  group_by(pardep, sesclass) %>% 
+  summarize(n = n()) %>% 
+  mutate(freq = round(((n / sum(n)) * 100), 2)) %>% 
+  unite("n_freq", c(n, freq), sep = " ") %>% 
+  spread(key = pardep, value = n_freq) %>% 
+  rename("Covariate" = sesclass)
+
+marital_tbl <- depress %>% 
+  mutate(pardep = as.factor(pardep), 
+         pardep = fct_recode(pardep, "Ever depressed" = "1", "Never depressed" = "0"),
+         msparent = as.factor(msparent), 
+         msparent = fct_recode(msparent, "Married w/Spouse" = "1", "Separated/Divorced" = "2")) %>%
+  group_by(pardep, msparent) %>% 
+  summarize(n = n()) %>% 
+  mutate(freq = round(((n / sum(n)) * 100), 2)) %>%
+  unite("n_freq", c(n, freq), sep = " ") %>% 
+  spread(key = pardep, value = n_freq) %>% 
+  rename("Covariate" = msparent)
+```
+
+```{r echo = FALSE, warning = FALSE}
+bind_rows(sex_tbl, depress_tbl, sub_abuse_tbl, ses_tbl, marital_tbl) %>% 
+  mutate_all(linebreak) %>% 
+  kable("latex", 
+        caption = "Offspring characteristics stratified by parental depression status", 
+        booktabs = TRUE, 
+        escape = FALSE,
+        col.names = linebreak(c("Covariate", "Never depressed\n(N = 95)", "Ever depressed\n(N = 125)")
+                              , align = "c"),
+        align = c("c", rep('r', 1))) %>% 
+  add_header_above(c(" ", "Parent depression status" = 2)) %>%
+    kable_styling() %>% 
+    group_rows("Child sex", 1, 2) %>% 
+    group_rows("Child depression status", 3, 4) %>% 
+    group_rows("Child substance abuse", 5, 6) %>% 
+    group_rows("Parent SES class", 7, 11) %>% 
+    group_rows("Parent marital status", 12, 13)
+```
+
 
 4. 
 
