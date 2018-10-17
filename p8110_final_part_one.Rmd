@@ -33,7 +33,9 @@ data depression;
 run;
 ```
 
-1. I defined the start time as the time of birth for all children. The end time was defined as either the age of onset of depression in children that were classified as ever having depression or as the age of a child at the interview for children that classified as never having depression. To hold this survival time, I created a variable called `follow_time`:
+*Section One*
+
+I defined the start time as the time of birth for all children. The end time was defined as either the age of onset of depression in children that were classified as ever having depression or as the age of a child at the interview for children that classified as never having depression. To hold this survival time, I created a variable called `follow_time`:
 
 ```{}
 data depression;
@@ -46,7 +48,9 @@ data depression;
 run; 
 ```
 
-2. 
+\newpage
+
+*Section Two*
 
 ```{}
 proc means data = depression median clm maxdec = 2; 
@@ -56,7 +60,13 @@ proc means data = depression median clm maxdec = 2;
 run;
 ```
 
-3. 
+Among children that developed depression but did not have a parent with depression, the median age of onset of depression was 17. Among children that developed depresion but did have a parent with depression, the median age of onset of depression was 13. We are 95% confident that the average age of onset of depression among children without parental depression is between 15.47 and 18.08. In addition, we are 95% confident that the average age of onset of depression among children with parental depression is between 11.51 and 13.90.
+
+\newpage
+
+*Section Three*
+
+Descriptive statistics table:
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 depress <- read_csv("./data/data.csv") %>% 
@@ -156,9 +166,9 @@ bind_rows(sex_tbl, depress_tbl, sub_abuse_tbl, ses_tbl, marital_tbl) %>%
         escape = FALSE,
         col.names = linebreak(c("Covariate", "Never depressed\n(N = 95)", "Ever depressed\n(N = 125)")
                               , align = "c"),
-        align = c("c", rep('r', 1))) %>% 
+        align = c("l", rep('r', 2))) %>% 
   add_header_above(c(" ", "Parent depression status" = 2)) %>%
-    kable_styling() %>% 
+    kable_styling(latex_options = "hold_position") %>% 
     group_rows("Child sex", 1, 2) %>% 
     group_rows("Child depression status", 3, 4) %>% 
     group_rows("Child substance abuse", 5, 6) %>% 
@@ -167,8 +177,10 @@ bind_rows(sex_tbl, depress_tbl, sub_abuse_tbl, ses_tbl, marital_tbl) %>%
     footnote(general = "Values inside parenthesis represent relative frequency")
 ```
 
+\newpage
 
-4. 
+
+*Section Four* 
 
 ```{}
 proc lifetest data = depression method = km conftype = loglog stderr plots = survival(cl);
