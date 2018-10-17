@@ -155,10 +155,59 @@ marital_tbl <- depress %>%
   unite("n_freq", c(n, freq), sep = " ") %>% 
   spread(key = pardep, value = n_freq) %>% 
   rename("Covariate" = msparent)
+
+age_int_tbl <- depress %>% 
+  mutate(pardep = as.factor(pardep), 
+         pardep = fct_recode(pardep, "Ever depressed" = "1", "Never depressed" = "0")) %>% 
+  group_by(pardep) %>% 
+  summarize(avg_age = round(mean(ptage), 2), 
+            sd_age = round(sd(ptage), 2)) %>% 
+  mutate(sd_age = as.character(sd_age), 
+         sd_age = str_pad(sd_age, width = 5, "right", pad = "0"),
+         sd_age = str_pad(sd_age, width = 6, "left", pad = "("),
+         sd_age = str_pad(sd_age, width = 7, "right", pad = ")")) %>% 
+  unite("n_freq", c(avg_age, sd_age), sep = " ") %>% 
+  spread(key = pardep, value = n_freq) %>% 
+  mutate(Covariate = "Average age at interview") %>% 
+  select(Covariate, everything())
+
+age_dep_on_tbl <- depress %>% 
+  filter(dsmdephr == 1) %>% 
+  mutate(pardep = as.factor(pardep), 
+         pardep = fct_recode(pardep, "Ever depressed" = "1", "Never depressed" = "0")) %>% 
+  group_by(pardep) %>% 
+  summarize(avg_age = round(mean(bedepon), 2), 
+            sd_age = round(sd(bedepon), 2)) %>% 
+  mutate(sd_age = as.character(sd_age), 
+         sd_age = str_pad(sd_age, width = 5, "right", pad = "0"),
+         sd_age = str_pad(sd_age, width = 6, "left", pad = "("),
+         sd_age = str_pad(sd_age, width = 7, "right", pad = ")")) %>% 
+  unite("n_freq", c(avg_age, sd_age), sep = " ") %>% 
+  spread(key = pardep, value = n_freq) %>% 
+  mutate(Covariate = "Average age of depression onset") %>% 
+  select(Covariate, everything())
+
+age_sub_abuse_tbl <- depress %>% 
+  filter(dsmsubhr == 1) %>% 
+  mutate(pardep = as.factor(pardep), 
+         pardep = fct_recode(pardep, "Ever depressed" = "1", "Never depressed" = "0")) %>% 
+  group_by(pardep) %>% 
+  summarize(avg_age = round(mean(besubon), 2), 
+            sd_age = round(sd(besubon), 2)) %>% 
+  mutate(sd_age = as.character(sd_age), 
+         sd_age = str_pad(sd_age, width = 2, "right", pad = "."),
+         sd_age = str_pad(sd_age, width = 5, "right", pad = "0"),
+         sd_age = str_pad(sd_age, width = 6, "left", pad = "("),
+         sd_age = str_pad(sd_age, width = 7, "right", pad = ")")) %>% 
+  unite("n_freq", c(avg_age, sd_age), sep = " ") %>% 
+  spread(key = pardep, value = n_freq) %>% 
+  mutate(Covariate = "Average age of substance abuse") %>% 
+  select(Covariate, everything())
 ```
 
 ```{r echo = FALSE, warning = FALSE}
-bind_rows(sex_tbl, depress_tbl, sub_abuse_tbl, ses_tbl, marital_tbl) %>% 
+bind_rows(sex_tbl, depress_tbl, sub_abuse_tbl, ses_tbl, marital_tbl, age_int_tbl, age_dep_on_tbl, 
+          age_sub_abuse_tbl) %>% 
   mutate_all(linebreak) %>% 
   kable("latex", 
         caption = "Offspring characteristics stratified by parental depression status", 
@@ -169,12 +218,12 @@ bind_rows(sex_tbl, depress_tbl, sub_abuse_tbl, ses_tbl, marital_tbl) %>%
         align = c("l", rep('r', 2))) %>% 
   add_header_above(c(" ", "Parent depression status" = 2)) %>%
     kable_styling(latex_options = "hold_position") %>% 
-    group_rows("Child sex", 1, 2) %>% 
-    group_rows("Child depression status", 3, 4) %>% 
-    group_rows("Child substance abuse", 5, 6) %>% 
-    group_rows("Parent SES class", 7, 11) %>% 
-    group_rows("Parent marital status", 12, 13) %>% 
-    footnote(general = "Values inside parenthesis represent relative frequency")
+    group_rows("Child sex - n(%)", 1, 2) %>% 
+    group_rows("Child depression status - n(%)", 3, 4) %>% 
+    group_rows("Child substance abuse - n(%)", 5, 6) %>% 
+    group_rows("Parent SES class - n(%)", 7, 11) %>% 
+    group_rows("Parent marital status - n(%)", 12, 13) %>% 
+    group_rows("Age covariates - mean(sd)", 14, 16)
 ```
 
 \newpage
