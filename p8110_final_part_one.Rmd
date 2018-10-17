@@ -69,7 +69,11 @@ sex_tbl <- depress %>%
          ptsex = fct_recode(ptsex, Male = "1", Female = "2")) %>% 
   group_by(pardep, ptsex) %>% 
   summarize(n = n()) %>% 
-  mutate(freq = round(((n / sum(n)) * 100), 2)) %>%
+  mutate(freq = round(((n / sum(n)) * 100), 2), 
+         freq = as.character(freq), 
+         freq = str_pad(freq, width = 5, "right", pad = "0"),
+         freq = str_pad(freq, width = 6, "left", pad = "("),
+         freq = str_pad(freq, width = 7, "right", pad = ")")) %>%
   unite("n_freq", c(n, freq), sep = " ") %>% 
   spread(key = pardep, value = n_freq) %>% 
   rename("Covariate" = ptsex) 
@@ -81,7 +85,11 @@ depress_tbl <- depress %>%
          dsmdephr = fct_recode(dsmdephr, "Ever depressed" = "1", "Never depressed" = "0")) %>% 
   group_by(pardep, dsmdephr) %>% 
   summarize(n = n()) %>% 
-  mutate(freq = round(((n / sum(n)) * 100), 2)) %>% 
+  mutate(freq = round(((n / sum(n)) * 100), 2),
+         freq = as.character(freq), 
+         freq = str_pad(freq, width = 5, "right", pad = "0"),
+         freq = str_pad(freq, width = 6, "left", pad = "("),
+         freq = str_pad(freq, width = 7, "right", pad = ")")) %>%
   unite("n_freq", c(n, freq), sep = " ") %>% 
   spread(key = pardep, value = n_freq) %>% 
   rename("Covariate" = dsmdephr)
@@ -93,7 +101,11 @@ sub_abuse_tbl <- depress %>%
          dsmsubhr = fct_recode(dsmsubhr, "Substance abuse" = "1", "No substance abuse" = "0")) %>% 
   group_by(pardep, dsmsubhr) %>% 
   summarize(n = n()) %>% 
-  mutate(freq = round(((n / sum(n)) * 100), 2)) %>% 
+  mutate(freq = round(((n / sum(n)) * 100), 2),
+         freq = as.character(freq), 
+         freq = str_pad(freq, width = 5, "right", pad = "0"),
+         freq = str_pad(freq, width = 6, "left", pad = "("),
+         freq = str_pad(freq, width = 7, "right", pad = ")")) %>%
   unite("n_freq", c(n, freq), sep = " ") %>% 
   spread(key = pardep, value = n_freq) %>% 
   rename("Covariate" = dsmsubhr)
@@ -105,7 +117,13 @@ ses_tbl <- depress %>%
   filter(!is.na(sesclass)) %>% 
   group_by(pardep, sesclass) %>% 
   summarize(n = n()) %>% 
-  mutate(freq = round(((n / sum(n)) * 100), 2)) %>% 
+  mutate(freq = round(((n / sum(n)) * 100), 2),
+         freq = as.character(freq), 
+         freq = str_pad(freq, width = 3, "right", pad = "."),
+         freq = str_pad(freq, width = 4, "right", pad = "0"),
+         freq = str_pad(freq, width = 5, "right", pad = "0"),
+         freq = str_pad(freq, width = 6, "left", pad = "("),
+         freq = str_pad(freq, width = 7, "right", pad = ")")) %>%
   unite("n_freq", c(n, freq), sep = " ") %>% 
   spread(key = pardep, value = n_freq) %>% 
   rename("Covariate" = sesclass)
@@ -117,7 +135,13 @@ marital_tbl <- depress %>%
          msparent = fct_recode(msparent, "Married w/Spouse" = "1", "Separated/Divorced" = "2")) %>%
   group_by(pardep, msparent) %>% 
   summarize(n = n()) %>% 
-  mutate(freq = round(((n / sum(n)) * 100), 2)) %>%
+  mutate(freq = round(((n / sum(n)) * 100), 2),
+         freq = as.character(freq), 
+         freq = str_pad(freq, width = 3, "right", pad = "."),
+         freq = str_pad(freq, width = 4, "right", pad = "0"),
+         freq = str_pad(freq, width = 5, "right", pad = "0"),
+         freq = str_pad(freq, width = 6, "left", pad = "("),
+         freq = str_pad(freq, width = 7, "right", pad = ")")) %>%
   unite("n_freq", c(n, freq), sep = " ") %>% 
   spread(key = pardep, value = n_freq) %>% 
   rename("Covariate" = msparent)
@@ -139,7 +163,8 @@ bind_rows(sex_tbl, depress_tbl, sub_abuse_tbl, ses_tbl, marital_tbl) %>%
     group_rows("Child depression status", 3, 4) %>% 
     group_rows("Child substance abuse", 5, 6) %>% 
     group_rows("Parent SES class", 7, 11) %>% 
-    group_rows("Parent marital status", 12, 13)
+    group_rows("Parent marital status", 12, 13) %>% 
+    footnote(general = "Values inside parenthesis represent relative frequency")
 ```
 
 
