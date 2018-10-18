@@ -1,11 +1,13 @@
 ---
 title: "Applied Regression II Final - Part One"
 author: "Nick Williams"
-output: pdf_document
+output: 
+  pdf_document:
+    fig_caption: false
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.pos = "H")
 library(tidyverse)
 library(kableExtra)
 ```
@@ -52,15 +54,11 @@ run;
 
 *Section Two*
 
-```{}
-proc means data = depression median clm maxdec = 2; 
-	var age_child_dep;
-	class parent_dep; 
-	where child_dep = 1;
-run;
-```
+Using a Kaplan-Meier estimator, we estimate that 50% children who do not have a depressed parent or a parent with a history of depression will develop depression by the age of 23. We are 95% confident that this estimate could be as low as 19. In addition, we estimate that 50% of children with a depressed parent or a parent with a history of depression will develop depression by the age of 20. We are 95% confident that this estimate could be as low as 17. 
 
-Among children that developed depression but did not have a parent with depression, the median age of onset of depression was 17. Among children that developed depresion but did have a parent with depression, the median age of onset of depression was 13. We are 95% confident that the average age of onset of depression among children without parental depression is between 15.47 and 18.08. In addition, we are 95% confident that the average age of onset of depression among children with parental depression is between 11.51 and 13.90.
+![](./reports/part_2_median_no_pd.png)
+
+![](./reports/part_2_median_pd.png)
 
 \newpage
 
@@ -228,7 +226,6 @@ bind_rows(sex_tbl, depress_tbl, sub_abuse_tbl, ses_tbl, marital_tbl, age_int_tbl
 
 \newpage
 
-
 *Section Four* 
 
 ```{}
@@ -244,5 +241,9 @@ run;
        $p = P(\chi^2_1 \geq 7.6876) = 0.0056$
   (iii) $0.0056 < 0.05 \rightarrow$ reject the null hypothesis
   (iv) At the 5% signficance level, there is sufficient evidence to claim that age of onset of depression in children differs between children with parental history of depression and children without parental history of depression. 
+  
+![](./reports/part_1_problem_4_test.png)
+
+![](./reports/part_1_problem_4_curve.png){width=500px}
 
 
