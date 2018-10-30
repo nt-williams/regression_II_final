@@ -1,4 +1,4 @@
-* Nick Williams
+﻿* Nick Williams
 * CUMC Department of Biostatistics
 * Applied Regression II
 * Final Project;
@@ -33,15 +33,7 @@ data depression;
 		follow_time = age_child_dep; 
 	else if child_dep = 0 
 		then follow_time = child_age; 
-run; 
-
-* descriptive statistics; 
-
-proc means data = depression median clm maxdec = 2; 
-	var age_child_dep;
-	class parent_dep; 
-	where child_dep = 1;
-run; 
+run;  
 
 * KM-surv curve, parent depression status; 
 
@@ -50,3 +42,25 @@ proc lifetest data = depression method = km conftype = loglog stderr plots = sur
 	time follow_time * child_dep(0); 
 run; 
 
+* Cox model, parent depression status; 
+
+proc phreg data = depression;
+	class parent_dep;
+	model follow_time * child_dep(0) = parent_dep / ties = efron; 
+run; 
+
+* cox model, comparing time of depression onset; 
+
+data depression; 
+	set depression; 
+	if follow_time >= 13 then early_onset = 0; 
+		else early_onset = 1; 
+run; 
+
+proc phreg data = depression; 
+	class parent_dep (ref = '0') / param = ref;
+	class early_onset (ref = '0') / param = ref;
+	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
+	hazardratio parent_dep / diff = ref;
+run; 
+ 
