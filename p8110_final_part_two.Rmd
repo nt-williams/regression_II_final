@@ -1,0 +1,20 @@
+---
+title: "Applied Regression II Final - Part Two"
+author: "Nick Williams"
+output: 
+  pdf_document:
+    fig_caption: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.pos = "H")
+
+library(tidyverse)
+library(kableExtra)
+```
+
+
+```{r making dataframe for tables}
+
+```
+
