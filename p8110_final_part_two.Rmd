@@ -7,7 +7,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.pos = "H")
 
 library(tidyverse)
 library(kableExtra)
@@ -28,7 +28,11 @@ cox_tbl_2 <- tibble(
 )
 ```
 
+Model summaries for both model one and model two are found in the summary section. 
+
 *Model One*
+
+Model one uses a Cox model to model the time until a child experiences depression as a function of parental history of depression:
 
 $$
 \begin{aligned}
@@ -41,14 +45,25 @@ $$
 \end{aligned}
 $$
 
+SAS code for the model is as follows: 
+
 ```{}
 proc phreg data = depression;
 	class parent_dep (ref = '0') / param = ref;
 	model follow_time * child_dep(0) = parent_dep / ties = efron risklimits; 
+	assess ph / resample; 
 run; 
 ```
 
+I tested the proportional hazards assumption for parental depression and found that it was violated (p = 0.003). Because the proportional hazards assumption is violated, parental depression is a time-dependent and this needs to be controlled for.
+
+```{r echo = FALSE, fig.align = "center", out.width = "300px"}
+knitr::include_graphics("./reports/ph_plot.png")
+```
+
 *Model Two*
+
+A check of the proportional hazards assumption in model one showed that the effect of parental history on the time until a child experiences depression is not constant over time. As such, in model 2 I have introduced a time-dependent covariate ("early_onset") that indicates if the age that depression started or the age at which censoring occured were pre-pubertal (< 13 years old) or not (13 years or older): 
 
 $$
 \begin{aligned}
@@ -65,6 +80,8 @@ $$
 \end{aligned}
 $$
 
+SAS code for model two is as follows:
+
 ```{}
 data depression; 
 	set depression; 
@@ -79,6 +96,10 @@ proc phreg data = depression;
 	hazardratio parent_dep / diff = ref;
 run; 
 ```
+
+*Summary*
+
+Table 1 provides hazard ratios and corresponding 95% confidence intervals for model one and model two. 
 
 ```{r model table, echo = FALSE}
 bind_rows(cox_tbl_1, cox_tbl_2) %>%

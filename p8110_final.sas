@@ -42,6 +42,26 @@ proc lifetest data = depression method = km conftype = loglog stderr plots = sur
 	time follow_time * child_dep(0); 
 run; 
 
+data dep_13; 
+	set depression; 
+	where follow_time < 13; 
+run; 
+
+data dep_14; 
+	set depression; 
+	where follow_time >= 13; 
+run; 
+
+proc lifetest data = dep_13 method = km conftype = loglog stderr plots = survival(cl);
+	strata parent_dep;  
+	time follow_time * child_dep(0); 
+run;
+
+proc lifetest data = dep_14 method = km conftype = loglog stderr plots = survival(cl);
+	strata parent_dep;  
+	time follow_time * child_dep(0); 
+run;
+ 
 * Cox model, parent depression status; 
 
 proc phreg data = depression;
