@@ -7,30 +7,86 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.pos = "H")
+knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(kableExtra)
 ```
 
-
-```{r making dataframe for tables}
+```{r making dataframe for tables, echo = FALSE}
 
 cox_tbl_1 <- tibble(
-  Variables = c("Parental Depression", "No Parental Depression"), 
+  Covariate = c("Parental Depression", "No Parental Depression"), 
   "HR (95% CI)" = c("2.01 (1.21, 3.33)", "1.00 (reference)"), 
   "p-Value" = c(0.007, "")
 )
 
 cox_tbl_2 <- tibble(
-  Variables = c("No parental depression, pre-pubertal onset", "Parental depression, pre-pubertal onset", "No parental depression, not pre-pubertal onset", "Parental depression, not pre-pubertal onset"), 
+  Covariate = c("No parental depression, pre-pubertal onset", "Parental depression, pre-pubertal onset", "No parental depression, not pre-pubertal onset", "Parental depression, not pre-pubertal onset"), 
   "HR (95% CI)" = c("1.00 (reference)" ,"5.16 (1.53, 17.42)", "1.00 (reference)", "1.32 (0.73, 2.38)"), 
   "p-Value" = c("", "", "", "")
 )
+```
 
+*Model One*
+
+$$
+\begin{aligned}
+  h(t, x) &= h_0(t)h(\beta_1x_{1i}) \\
+  \text{where, } x_1 &= 
+    \begin{cases}
+    0 \text{ if no history of parental depression} \\
+    1 \text{ if history of parental depression }
+    \end{cases}
+\end{aligned}
+$$
+
+```{}
+proc phreg data = depression;
+	class parent_dep (ref = '0') / param = ref;
+	model follow_time * child_dep(0) = parent_dep / ties = efron risklimits; 
+run; 
+```
+
+*Model Two*
+
+$$
+\begin{aligned}
+  h(t, x) &= h_0(t)h(\beta_1x_{1i} + \beta_2x_{2i} + \beta_3x_{1i}x_{2i}) \\
+  \text{where, } x_1 &= 
+    \begin{cases}
+    0 \text{ if no history of parental depression} \\
+    1 \text{ if history of parental depression }
+    \end{cases} \\ x_2 &= 
+    \begin{cases}
+    0 \text{ if follow time is} \geq \text{ 13 years} \\
+    1 \text{ if follow time is} < \text{ 13 years}
+    \end{cases}
+\end{aligned}
+$$
+
+```{}
+data depression; 
+	set depression; 
+	if follow_time >= 13 then early_onset = 0; 
+		else early_onset = 1; 
+run; 
+
+proc phreg data = depression; 
+	class parent_dep (ref = '0') / param = ref;
+	class early_onset (ref = '0') / param = ref;
+	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
+	hazardratio parent_dep / diff = ref;
+run; 
+```
+
+```{r model table, echo = FALSE}
 bind_rows(cox_tbl_1, cox_tbl_2) %>%
   kable("latex", 
-        booktabs = TRUE)
-
+        caption = "Hazard ratios comparing risk of depression according to parental depression history",
+        booktabs = TRUE) %>% 
+  kable_styling(latex_options = "hold_position") %>% 
+  group_rows("Model 1: Parental depression status only", 1, 2) %>% 
+  group_rows("Model 2: Pre-pubertal onset interaction", 3, 6)
 ```
 
