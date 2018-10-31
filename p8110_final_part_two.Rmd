@@ -16,5 +16,21 @@ library(kableExtra)
 
 ```{r making dataframe for tables}
 
+cox_tbl_1 <- tibble(
+  Variables = c("Parental Depression", "No Parental Depression"), 
+  "HR (95% CI)" = c("2.01 (1.21, 3.33)", "1.00 (reference)"), 
+  "p-Value" = c(0.007, "")
+)
+
+cox_tbl_2 <- tibble(
+  Variables = c("No parental depression, pre-pubertal onset", "Parental depression, pre-pubertal onset", "No parental depression, not pre-pubertal onset", "Parental depression, not pre-pubertal onset"), 
+  "HR (95% CI)" = c("1.00 (reference)" ,"5.16 (1.53, 17.42)", "1.00 (reference)", "1.32 (0.73, 2.38)"), 
+  "p-Value" = c("", "", "", "")
+)
+
+bind_rows(cox_tbl_1, cox_tbl_2) %>%
+  kable("latex", 
+        booktabs = TRUE)
+
 ```
 
