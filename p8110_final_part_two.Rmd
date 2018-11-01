@@ -55,7 +55,7 @@ proc phreg data = depression;
 run; 
 ```
 
-I tested the proportional hazards assumption for parental depression and found that it was violated (p = 0.003). Because the proportional hazards assumption is violated, parental depression is a time-dependent and this needs to be controlled for.
+I tested the proportional hazards assumption for parental depression and found that it was violated (p = 0.003). Because the proportional hazards assumption is violated, parental depression is time-dependent and this needs to be accounted for.
 
 ```{r echo = FALSE, fig.align = "center", out.width = "300px"}
 knitr::include_graphics("./reports/ph_plot.png")
@@ -63,7 +63,7 @@ knitr::include_graphics("./reports/ph_plot.png")
 
 *Model Two*
 
-A check of the proportional hazards assumption in model one showed that the effect of parental history on the time until a child experiences depression is not constant over time. As such, in model 2 I have introduced a time-dependent covariate ("early_onset") that indicates if the age that depression started or the age at which censoring occured were pre-pubertal (< 13 years old) or not (13 years or older): 
+A check of the proportional hazards assumption in model one showed that the effect of parental history on the time until a child experiences depression is not constant over time. As such, in model 2 I have introduced a time-dependent covariate ("early_onset") that indicates if the age that depression started or the age at which censoring occurred was pre-pubertal (< 13 years old) or not (13 years or older): 
 
 $$
 \begin{aligned}
@@ -80,7 +80,7 @@ $$
 \end{aligned}
 $$
 
-SAS code for model two is as follows:
+SAS code for model two and plot is as follows:
 
 ```{}
 data depression; 
@@ -95,11 +95,34 @@ proc phreg data = depression;
 	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
 	hazardratio parent_dep / diff = ref;
 run; 
+
+data plot; 
+	input id parent_dep early_onset; 
+	datalines; 
+	1 1 1
+	2 0 1
+	3 1 0
+	4 0 0
+	;
+run; 
+
+proc phreg data = depression plots(overlay) = survival;
+	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
+	hazardratio parent_dep / diff = ref;
+	baseline covariates = plot / rowid = id;
+	title "Survival curves of different child categories";
+run; 
 ```
 
 *Summary*
 
-Table 1 provides hazard ratios and corresponding 95% confidence intervals for model one and model two. 
+Using likelihood ratio tests, at the 5% significance level both model one and model two were statistically significant (Model one: $\chi^2_1 = 7.77, p = 0.005$, Model two: $\chi^2_3 = 98.89, p < 0.001$). 
+
+Table 1 provides hazard ratios and corresponding 95% confidence intervals for model one and model two. Using model one, children with parental history of depression have 2.01 times the risk of experiencing depression themselves compared to children without parental history of depression (95% CI: 1.209, 3.332). However, a check of the proportional hazards assumption for model one revealed that the effect of parental depression was not constant over time (p = 0.002). 
+
+Model two includes a time dependent covariate that indicates if depression onset was pre-pubertal or not (depression onset occurs before 13) and an interaction term between this variable and parental depression ($\chi^2_1 = 3.92, p = 0.048$). Assessing risk of depression using this interaction term revealed that children with a parental history of depression have 1.32 (95% CI: 0.73, 2.38) times the risk of experiencing non-pre-pubertal depression compared to children without a parental history of depression. However, children with parental history of depression have 5.16 (95% CI: 1.53, 17.42) times the risk of experiencing pre-pubertal depression than children without a parental history of depression. 
+
+Based on these analysis, children of depressed parents do experience a higher risk of depression themselves before the age of 13 compared to children without depressed parents. However, the risk of depression after the age of 13 is the same among both groups of children. Survival curves for model two can be found in Figure 1.
 
 ```{r model table, echo = FALSE}
 bind_rows(cox_tbl_1, cox_tbl_2) %>%
@@ -109,5 +132,9 @@ bind_rows(cox_tbl_1, cox_tbl_2) %>%
   kable_styling(latex_options = "hold_position") %>% 
   group_rows("Model 1: Parental depression status only", 1, 2) %>% 
   group_rows("Model 2: Pre-pubertal onset interaction", 3, 6)
+```
+
+```{r echo = FALSE, fig.align = "center", out.width = "300px", fig.cap = "id 1: history of parental depression, pre-pubertal onset of depression; id 2: no history of parental depression, pre-pubertal depression; id 3: history of parental depression, no pre-pubertal onset; id 4: no history of parental depression, no pre-pubertal onset"}
+knitr::include_graphics("./reports/part_2_surv_plot.png")
 ```
 
