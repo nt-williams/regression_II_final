@@ -3,6 +3,9 @@
 * Applied Regression II
 * Final Project;
 
+************************************
+Part 1
+
 * importing data;
 
 proc import out = depression 
@@ -41,13 +44,27 @@ proc lifetest data = depression method = km conftype = loglog stderr plots = sur
 	strata parent_dep;  
 	time follow_time * child_dep(0); 
 run; 
+
+**********************************************
+Part 2 
  
-* Cox model, parent depression status; 
+* Cox model, parent depression status crude model; 
 
 proc phreg data = depression;
 	class parent_dep (ref = '0') / param = ref;
 	model follow_time * child_dep(0) = parent_dep / ties = efron risklimits;
 	assess ph / resample;  
+run; 
+
+* cox model, parent depression status adjusted model; 
+
+proc phreg data = depression; 
+	class parent_dep (ref = '0')
+		  child_sex (ref = '1') 
+		  ses_parent (ref = '1')
+		  mar_stat_parent (ref = '1') / param = ref;
+	model follow_time*child_dep(0) = parent_dep child_sex ses_parent mar_stat_parent / ties = efron risklimits;
+	assess ph / resample; 
 run; 
 
 * cox model, comparing time of depression onset; 
@@ -58,11 +75,32 @@ data depression;
 		else early_onset = 1; 
 run; 
 
-proc phreg data = depression; 
-	class parent_dep (ref = '0') / param = ref;
-	class early_onset (ref = '0') / param = ref;
-	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
+proc phreg data = depression plots(cl overlay) = survival; 
+	class parent_dep (ref = '0') 
+		  early_onset (ref = '0') 
+		  child_sex (ref = '1') 
+		  ses_parent (ref = '1')
+		  mar_stat_parent (ref = '1') / param = ref;
+	model follow_time * child_dep(0) = parent_dep early_onset child_sex ses_parent mar_stat_parent parent_dep*early_onset / ties = efron;
 	hazardratio parent_dep / diff = ref;
 run; 
 
+* plotting survival curves;
+
+data plot; 
+	input id parent_dep early_onset; 
+	datalines; 
+	1 1 1
+	2 0 1
+	3 1 0
+	4 0 0
+	;
+run; 
+
+proc phreg data = depression plots(overlay) = survival;
+	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
+	hazardratio parent_dep / diff = ref;
+	baseline covariates = plot / rowid = id;
+	title "Survival curves of different child categories";
+run; 
  

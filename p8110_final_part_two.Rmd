@@ -14,25 +14,65 @@ library(kableExtra)
 ```
 
 ```{r making dataframe for tables, echo = FALSE}
-
 cox_tbl_1 <- tibble(
-  Covariate = c("Parental Depression", "No Parental Depression"), 
-  "HR (95% CI)" = c("2.01 (1.21, 3.33)", "1.00 (reference)"), 
-  "p-Value" = c(0.007, "")
-)
+  Covariate = c("Parent Dep. vs. None", "Parent Dep vs. None", "Female vs. Male", "SES 1", "SES 2", "SES 3", 
+                "SES 4", "SES 5", "Not married vs. Married"), 
+  "HR (95% CI)" = c("2.01 (1.21, 3.33)", "2.28 (1.34, 3.88)", "1.84 (1.10, 3.07)", "Reference",
+                    "1.75 (0.47, 6.62)", "2.60 (0.74, 9.16)", "2.08 (0.61, 7.07)", 
+                    "1.05 (0.24, 4.50)", "0.91 (0.50, 1.62)"), 
+  "p-Value" = c(0.007, 0.002, 0.02, "", 0.41, 0.14, 0.24, 0.95, 0.74)) %>% 
+  kable("latex", 
+        booktabs = TRUE, 
+        caption = "Model one crude and adjusted hazards ratio") %>% 
+  kable_styling(latex_options = "hold_position") %>% 
+  group_rows("Crude", 1, 1) %>% 
+  group_rows("Adjusted", 2, 9)
 
 cox_tbl_2 <- tibble(
-  Covariate = c("No parental depression, pre-pubertal onset", "Parental depression, pre-pubertal onset", "No parental depression, not pre-pubertal onset", "Parental depression, not pre-pubertal onset"), 
-  "HR (95% CI)" = c("1.00 (reference)" ,"5.16 (1.53, 17.42)", "1.00 (reference)", "1.32 (0.73, 2.38)"), 
-  "p-Value" = c("", "", "", "")
-)
+  Covariate = c("Parent Dep. vs. None", "Parent Dep., Pre-pubertal interaction",
+                "Parent Dep. vs. None, pre-pubertal onset",
+                "Parent Dep. vs. None, not pre-pubertal onset", "Parent Dep. vs. None", 
+                "Parent Dep., Pre-pubertal interaction", 
+                "Parent Dep. vs. None, pre-pubertal onset",
+                "Parent Dep. vs. None, not pre-pubertal onset", "Female vs. Male", "SES Class",
+                "1", "2", "3", "4", "5", "Not married vs. Married"), 
+  "HR (95% CI)" = c("", "", "5.16 (1.53, 17.42)", "1.32 (0.73, 2.38)", "", "", 
+                    "5.31 (1.55, 18.26)", 
+                    "1.45 (0.78, 2.69)", "1.71 (1.02, 2.88)", "", "Reference", 
+                    "1.52 (0.41, 5.71)", "2.34 (0.67, 8.15)", "2.09 (0.62, 7.06)", 
+                    "1.47 (0.34, 6.39)", "1.25 (0.70, 2.24)"), 
+  "p-Value" = c(0.36, "", "", "", 0.23, "", "", "", 0.04, "", "", 0.54, 0.18, 0.24, 0.61, 0.46)) %>% 
+  kable("latex", 
+        booktabs = TRUE, 
+        caption = "Model two crude and adjusted hazard ratios") %>% 
+    kable_styling(latex_options = "hold_position") %>% 
+  group_rows("Crude Model", 1, 4) %>% 
+  group_rows("Adjusted Model", 5, 15) %>% 
+  add_indent(c(3, 4, 7, 8, 11:16))
+                
+                
+    
+#   "Parent Dep. vs. None", "Parent Dep vs. None", "Female vs. Male", "SES 1", "SES 2", "SES 3", "SES 4", "SES 5", 
+#               "Not married vs. Married"), 
+# "HR (95% CI)" = c("2.01 (1.21, 3.33)", "2.28 (1.34, 3.88)", "1.84 (1.10, 3.07)", "Reference",
+#                   "1.75 (0.47, 6.62)", "2.60 (0.74, 9.16)", "2.08 (0.61, 7.07)", 
+#                   "1.05 (0.24, 4.50)", "0.91 (0.50, 1.62)"), 
+# "p-Value" = c(0.007, 0.002, 0.02, "", 0.41, 0.14, 0.24, 0.95, 0.74)) %>% 
+# kable("latex", 
+#       booktabs = TRUE, 
+#       caption = "Model one crude and adjusted hazards ratios") %>% 
+# group_rows("Crude", 1, 1) %>% 
+# group_rows("Adjusted", 2, 9)
+
 ```
 
-Model summaries for both model one and model two are found in the summary section. 
+Model summaries and outcomes for both model one and model two are found in the summary section. 
 
-*Model One*
+*Model One: Parental depression independent of time*
 
-Model one uses a Cox model to model the time until a child experiences depression as a function of parental history of depression:
+Model one uses a Cox model to model the time until a child experiences depression as a function of parental history of depression. I fit a crude and an adjusted model. 
+
+The crude model one is:
 
 $$
 \begin{aligned}
@@ -45,7 +85,46 @@ $$
 \end{aligned}
 $$
 
-SAS code for the model is as follows: 
+The adjusted model one is: 
+
+$$
+\begin{aligned}
+  h(t, x) &= h_0(t)h(\beta_1x_{1i} + \beta_2x_{2i} + \beta_3x_{3i} + \beta_4x_{4i} + \beta_5x_{5i} + \beta_6x_{6i} +             \beta_7x_{7i}) \\
+  \text{where, } x_1 &= 
+    \begin{cases}
+      0 \text{ if no history of parental depression} \\
+      1 \text{ if history of parental depression }
+    \end{cases} x_2 = 
+    \begin{cases}
+      0 \text{ if female} \\
+      1 \text{ if male} 
+    \end{cases} \\
+    x_3 &= 
+    \begin{cases}
+      1 \text{ if SES class is 2} \\
+      0 \text{ otherwise}
+    \end{cases} x_4 = 
+    \begin{cases} 
+      1 \text{ if SES class is 3} \\
+      0 \text{ otherwise}
+    \end{cases} x_5 = 
+    \begin{cases}
+      1 \text{ if SES class is 4} \\
+      0 \text{ otherwise}
+    \end{cases} \\
+    x_6 &= 
+    \begin{cases}
+      1 \text{ if SES class is 5} \\
+      0 \text{ otherwise}
+    \end{cases} x_7 = 
+    \begin{cases}
+      1 \text{ if parents married} \\
+      0 \text{ otherwise}
+    \end{cases}
+\end{aligned}
+$$
+
+SAS code for the crude and adjusted model is as follows: 
 
 ```{}
 proc phreg data = depression;
@@ -53,9 +132,19 @@ proc phreg data = depression;
 	model follow_time * child_dep(0) = parent_dep / ties = efron risklimits; 
 	assess ph / resample; 
 run; 
+
+proc phreg data = depression; 
+	class parent_dep (ref = '0')
+		  child_sex (ref = '1') 
+		  ses_parent (ref = '1')
+		  mar_stat_parent (ref = '1') / param = ref;
+	model follow_time*child_dep(0) = parent_dep child_sex ses_parent mar_stat_parent 
+	  / ties = efron risklimits;
+	assess ph / resample; 
+run; 
 ```
 
-I tested the proportional hazards assumption for parental depression and found that it was violated (p = 0.003). Because the proportional hazards assumption is violated, parental depression is time-dependent and this needs to be accounted for.
+I tested the proportional hazards assumption for all covariates and found that the assumption was violated for parental depression status (p = 0.003). Because the proportional hazards assumption is violated, parental depression is a time-dependent variable and needs to be adjusted for.
 
 ```{r echo = FALSE, fig.align = "center", out.width = "300px"}
 knitr::include_graphics("./reports/ph_plot.png")
@@ -64,6 +153,8 @@ knitr::include_graphics("./reports/ph_plot.png")
 *Model Two*
 
 A check of the proportional hazards assumption in model one showed that the effect of parental history on the time until a child experiences depression is not constant over time. As such, in model 2 I have introduced a time-dependent covariate ("early_onset") that indicates if the age that depression started or the age at which censoring occurred was pre-pubertal (< 13 years old) or not (13 years or older): 
+
+The crude model one is: 
 
 $$
 \begin{aligned}
@@ -80,7 +171,51 @@ $$
 \end{aligned}
 $$
 
-SAS code for model two and plot is as follows:
+The adjusted model two is: 
+
+$$
+\begin{aligned}
+  h(t, x) &= h_0(t)h(\beta_1x_{1i} + \beta_2x_{2i} + \beta_3x_{3i} + \beta_4x_{4i} + \beta_5x_{5i} + \beta_6x_{6i} + \beta_7x_{7i} + \beta_8x_{8i} + \beta_9x_{1i}x_{2i}\\
+  \text{where, } x_1 &= 
+    \begin{cases}
+      1 \text{ if history of parental depression } \\
+      0 \text{ if no history of parental depression}
+    \end{cases} \\ x_2 &= 
+    \begin{cases}
+      1 \text{ if follow time is} < \text{ 13 years} \\
+      0 \text{ if follow time is} \geq \text{ 13 years}
+    \end{cases} x_3 = 
+    \begin{cases}
+      1 \text{ if Male} \\
+      0 \text{ if Female} 
+    \end{cases}
+    x_4 = 
+    \begin{cases}
+      1 \text{ if SES class is 2} \\
+      0 \text{ otherwise}
+    \end{cases} \\
+    x_5 &= 
+    \begin{cases} 
+      1 \text{ if SES class is 3} \\
+      0 \text{ otherwise}
+    \end{cases} x_6 = 
+    \begin{cases}
+      1 \text{ if SES class is 4} \\
+      0 \text{ otherwise}
+    \end{cases} \\
+    x_7 &= 
+    \begin{cases}
+      1 \text{ if SES class is 5} \\
+      0 \text{ otherwise}
+    \end{cases} x_8 = 
+    \begin{cases}
+      1 \text{ if parents married} \\
+      0 \text{ otherwise}
+    \end{cases}
+\end{aligned}
+$$
+
+SAS code for the crude and adjusted model two, as well as the survival plot is as follows:
 
 ```{}
 data depression; 
@@ -89,52 +224,67 @@ data depression;
 		else early_onset = 1; 
 run; 
 
-proc phreg data = depression; 
-	class parent_dep (ref = '0') / param = ref;
-	class early_onset (ref = '0') / param = ref;
+proc phreg data = depression;
+	class parent_dep (ref = '0') 
+		  early_onset (ref = '0') / param = ref;
 	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
+	hazardratio parent_dep / diff = ref;
+run;
+
+proc phreg data = depression;
+	class parent_dep (ref = '0') 
+		  early_onset (ref = '0') 
+		  child_sex (ref = '1') 
+		  ses_parent (ref = '1')
+		  mar_stat_parent (ref = '1') / param = ref;
+	model follow_time * child_dep(0) = parent_dep early_onset child_sex ses_parent 
+			mar_stat_parent parent_dep*early_onset / ties = efron risklimits;
 	hazardratio parent_dep / diff = ref;
 run; 
 
 data plot; 
-	input id parent_dep early_onset; 
+	input Strata parent_dep early_onset child_sex ses_parent mar_stat_parent; 
 	datalines; 
-	1 1 1
-	2 0 1
-	3 1 0
-	4 0 0
+	1 1 1 1 1 1
+	2 0 1 1 1 1
+	3 1 0 1 1 1
+	4 0 0 1 1 1
 	;
 run; 
 
 proc phreg data = depression plots(overlay) = survival;
 	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
 	hazardratio parent_dep / diff = ref;
-	baseline covariates = plot / rowid = id;
+	baseline covariates = plot / rowid = Strata;
 	title "Survival curves of different child categories";
-run; 
+run;  
 ```
 
 *Summary*
 
-Using likelihood ratio tests, at the 5% significance level both model one and model two were statistically significant (Model one: $\chi^2_1 = 7.77, p = 0.005$, Model two: $\chi^2_3 = 98.89, p < 0.001$). 
+Using likelihood ratio tests, at the 5% significance level both adjusted model one and adjusted model two were statistically significant (Model one: $\chi^2_1 = 20.02, p = 0.006$, Model two: $\chi^2_3 = 107.06, p < 0.0001$). 
 
-Table 1 provides hazard ratios and corresponding 95% confidence intervals for model one and model two. Using model one, children with parental history of depression have 2.01 times the risk of experiencing depression themselves compared to children without parental history of depression (95% CI: 1.209, 3.332). However, a check of the proportional hazards assumption for model one revealed that the effect of parental depression was not constant over time (p = 0.002). 
+Table 1 provides hazard ratios and corresponding 95% confidence intervals for model one\. Based on model one, children with parental history of depression have 2.28 times the risk of experiencing depression themselves compared to children without parental history of depression, adjusting for sex, SES class of parents, and marital status of parents (95% CI: 1.209, 3.332). However, a check of the proportional hazards assumption for model one revealed that the effect of parental depression was not constant over time (p = 0.002).
 
-Model two includes a time dependent covariate that indicates if depression onset was pre-pubertal or not (depression onset occurs before 13) and an interaction term between this variable and parental depression ($\chi^2_1 = 3.92, p = 0.048$). Assessing risk of depression using this interaction term revealed that children with a parental history of depression have 1.32 (95% CI: 0.73, 2.38) times the risk of experiencing non-pre-pubertal depression compared to children without a parental history of depression. However, children with parental history of depression have 5.16 (95% CI: 1.53, 17.42) times the risk of experiencing pre-pubertal depression than children without a parental history of depression. 
+Table two provides hazard ratios and 95% confidenc intervals for model two. Model two includes a time dependent covariate that indicates if depression onset was pre-pubertal or not (depression onset occurs before 13) and an interaction term between this variable and parental depression ($\chi^2_1 = 3.51, p = 0.06$). Assessing risk of depression using this interaction term revealed that children with a parental history of depression have 1.45 (95% CI: 0.78, 2.69) times the risk of experiencing non-pre-pubertal depression compared to children without a parental history of depression, adjusting for sex, SES status of parents, and marital status of parents. However, children with parental history of depression have 5.31 (95% CI: 1.55, 18.26) times the risk of experiencing pre-pubertal depression than children without a parental history of depression, adjusting for all other covariates. 
 
 Based on these analysis, children of depressed parents do experience a higher risk of depression themselves before the age of 13 compared to children without depressed parents. However, the risk of depression after the age of 13 is the same among both groups of children. Survival curves for model two can be found in Figure 1.
 
 ```{r model table, echo = FALSE}
-bind_rows(cox_tbl_1, cox_tbl_2) %>%
-  kable("latex", 
-        caption = "Hazard ratios comparing risk of depression according to parental depression history",
-        booktabs = TRUE) %>% 
-  kable_styling(latex_options = "hold_position") %>% 
-  group_rows("Model 1: Parental depression status only", 1, 2) %>% 
-  group_rows("Model 2: Pre-pubertal onset interaction", 3, 6)
+cox_tbl_1
+
+cox_tbl_2
+
+# bind_rows(cox_tbl_1, cox_tbl_2) %>%
+#   kable("latex", 
+#         caption = "Hazard ratios comparing risk of depression according to parental depression history",
+#         booktabs = TRUE) %>% 
+#   kable_styling(latex_options = "hold_position") %>% 
+#   group_rows("Model 1: Parental depression status only", 1, 2) %>% 
+#   group_rows("Model 2: Pre-pubertal onset interaction", 3, 6)
 ```
 
-```{r echo = FALSE, fig.align = "center", out.width = "300px", fig.cap = "id 1: history of parental depression, pre-pubertal onset of depression; id 2: no history of parental depression, pre-pubertal depression; id 3: history of parental depression, no pre-pubertal onset; id 4: no history of parental depression, no pre-pubertal onset"}
+```{r echo = FALSE, fig.align = "center", out.width = "300px", fig.cap = "Strata 1: history of parental depression, pre-pubertal onset of depression; Strata 2: no history of parental depression, pre-pubertal depression; Strata 3: history of parental depression, no pre-pubertal onset; Strata 4: no history of parental depression, no pre-pubertal onset"}
 knitr::include_graphics("./reports/part_2_surv_plot.png")
 ```
 
