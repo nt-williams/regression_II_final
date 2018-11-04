@@ -75,32 +75,44 @@ data depression;
 		else early_onset = 1; 
 run; 
 
-proc phreg data = depression plots(cl overlay) = survival; 
+* crude;
+
+proc phreg data = depression;
+	class parent_dep (ref = '0') 
+		  early_onset (ref = '0') / param = ref;
+	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
+	hazardratio parent_dep / diff = ref;
+run;
+
+* adjusted;
+
+proc phreg data = depression;
 	class parent_dep (ref = '0') 
 		  early_onset (ref = '0') 
 		  child_sex (ref = '1') 
 		  ses_parent (ref = '1')
 		  mar_stat_parent (ref = '1') / param = ref;
-	model follow_time * child_dep(0) = parent_dep early_onset child_sex ses_parent mar_stat_parent parent_dep*early_onset / ties = efron;
+	model follow_time * child_dep(0) = parent_dep early_onset child_sex ses_parent 
+			mar_stat_parent parent_dep*early_onset / ties = efron risklimits;
 	hazardratio parent_dep / diff = ref;
 run; 
 
 * plotting survival curves;
 
 data plot; 
-	input id parent_dep early_onset; 
+	input Strata parent_dep early_onset child_sex ses_parent mar_stat_parent; 
 	datalines; 
-	1 1 1
-	2 0 1
-	3 1 0
-	4 0 0
+	1 1 1 1 1 1
+	2 0 1 1 1 1
+	3 1 0 1 1 1
+	4 0 0 1 1 1
 	;
 run; 
 
 proc phreg data = depression plots(overlay) = survival;
 	model follow_time * child_dep(0) = parent_dep early_onset parent_dep*early_onset / ties = efron;
 	hazardratio parent_dep / diff = ref;
-	baseline covariates = plot / rowid = id;
+	baseline covariates = plot / rowid = Strata;
 	title "Survival curves of different child categories";
 run; 
  
