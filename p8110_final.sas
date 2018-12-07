@@ -115,6 +115,13 @@ proc phreg data = depression plots(overlay) = survival;
 	baseline covariates = plot / rowid = Strata;
 	title "Survival curves of different child categories";
 run; 
+
+proc phreg data=depression;
+class parent_dep(ref="0") /param=ref; 
+model follow_time*child_dep(0) = parent_dep int / ties=efron rl covb;
+if follow_time>=13 then onset=0; else onset=1; 
+int = parent_dep*onset; 
+run;
  
 **********************************************************************************************************************************************
 Part 3; 
@@ -122,8 +129,21 @@ Part 3;
 data depression; 
 	set depression; 
 
+	if age_child_dep = -1 then age_child_dep = .;
+	if age_sub_child = -1 then age_sub_child = .;
+
 	if sub_abuse_child = 1
 		then follow_time_sub = age_sub_child; 
 	else follow_time_sub = child_age; 
+
+	time_dep_sub = age_sub_child - age_child_dep; 
 run; 
 
+proc phreg data = depression; 
+	class parent_dep (ref = '0') 
+		  child_sex (ref = '1') / param = ref; 
+	model follow_time_sub * sub_abuse_child(0) = dep parent_dep child_sex child_age / ties = efron risklimits; 
+		if age_child_dep > follow_time_sub or child_dep = 0 then dep = 0; 
+			else dep = 1; 
+	assess ph / resample; 
+run; 
