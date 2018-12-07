@@ -135,7 +135,19 @@ data depression;
 	if sub_abuse_child = 1
 		then follow_time_sub = age_sub_child; 
 	else follow_time_sub = child_age; 
+run;
+
+* crude model; 
+
+proc phreg data = depression; 
+	title "Cox regression with depression status treated as time-dependent - crude"; 
+	model follow_time_sub * sub_abuse_child(0) = dep / ties = efron risklimits; 
+		* looking at each event timepoint and comparing the age of onset of dep to age of onset of sub abuse;
+		if age_child_dep > follow_time_sub or child_dep = 0 then dep = 0; 
+			else dep = 1; 
 run; 
+
+* full model;  
 
 proc phreg data = depression; 
 	title "Cox regression with depression status treated as time-dependent";
@@ -146,3 +158,12 @@ proc phreg data = depression;
 		if age_child_dep > follow_time_sub or child_dep = 0 then dep = 0; 
 			else dep = 1; 
 run; 
+
+* assessing ph assumption of other covariates; 
+
+proc phreg data = depression; 
+	class parent_dep (ref = '0') 
+		  child_sex (ref = '1') / param = ref;  
+	model follow_time_sub * sub_abuse_child(0) = parent_dep child_sex child_age / ties = efron risklimits; 
+	assess ph / resample;  
+run;
