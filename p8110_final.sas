@@ -116,3 +116,14 @@ proc phreg data = depression plots(overlay) = survival;
 	title "Survival curves of different child categories";
 run; 
  
+**********************************************************************************************************************************************
+Part 3; 
+
+data depression; 
+	set depression; 
+
+	if sub_abuse_child = 1
+		then follow_time_sub = age_sub_child; 
+	else follow_time_sub = child_age; 
+run; 
+
